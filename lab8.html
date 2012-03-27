@@ -1,0 +1,70 @@
+<html>
+<head>
+<title>CIS 457 Lab 8: Router Operation</title>
+<link rel="stylesheet" href="../../../stylesheet.css">
+<style type="text/css">
+   li {
+     margin-top: 20px
+   }
+   </style>
+
+</head>
+<body>
+<h1>CIS 457 Lab 8: Router Operation</h1>
+
+
+<hr>
+
+<p>In class, we brifly discussed routing tables. These are usually implemented using some variant of the Trie data structure. In lab we will discuss the multibit trie data structure. <b>This lab may be done in groups of at most two students. You may work alone if you choose to.</b>
+
+<p><b>What to turn in:</b> You must turn in your code on blackboard. Additionally, you must demo your program on 4/17/12 in lab. If you do not demo, you will recieve no credit for this assignment.
+
+<hr>
+
+<p>In this assignment, you must implement longest prefix match routing
+using a multibit trie. To get any credit for this assignment, you must
+use a trie. Implementing this program in any other way will result in
+score of 0.Your program should take as input two files (specified on
+the command line) as described below.
+
+<p>The first file will be the list of possible routes. Each line in
+this file will consiste of an IP prefix, and next hop router. A sample
+is available <a href="bgpsample.txt">here.</a> A different file will
+be provided for use when demoing. This file will only contain one next
+hop for each prefix (while normally a router would look at the AS path
+and choose which next hop to use for each prefix, this step is already
+taken care of for you).
+
+<p>The second file will be a list of IP addresses. Your program should
+look up each address in the file, perform the longest prefix match,
+and output the IP address of the next hop router that packets destined
+to this IP address should be sent to.
+
+<p>You must write this program in Java, C, or C++. You may not use any
+non-standard libraries without permission, nor use any existing trie
+implmentations available online.
+
+<p><b>To get a C:</b> Implement the specification described above,
+using a multibit trie with a fixed stride length of 2.
+
+<p><b>To get a B:</b> Make the stride length adjustable. You must
+support stride lengths of 1 - 4. It is fine for the stride length to
+be specified at startup, or to make it require a recompile to adjust
+the length. If it requires a recompilation, you must be able to adjust
+the length by editing at most a single line of code.
+
+<p><b>To get an A:</b> Implement everything necessary for a
+B. Additionally, add code to your program to time the lookups (in
+java, you should use System.nanoTime()). You should make your best
+effort to only include the trie lookups and nothing else in this
+measurement (no trie building, file reading, etc). Measure and graph
+the average trie lookup time (over lookups of at least 1000 random IP
+addresses that match prefixes other than 0.0.0.0/0) for your program
+with stride lengths of 1, 2, 3, and 4. Extra points will be awarded to
+the group with the fastest average lookups (with whatever stride
+length is best) using a Java program, and the fastest with a C/C++
+program. A smaller amount of extra points will be awarded to any
+groups within 10% of the fastest.
+
+</body>
+</html>
