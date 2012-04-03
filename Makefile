@@ -1,17 +1,17 @@
 CC=gcc
 DBGFLAG=-ggdb 
-CFLAGS=-std=c99 $(DBGFLAG) -Wall
+CFLAGS=-std=c99 $(DBGFLAG) -Wall -O2 
 LDLIBS=
-LDFLAGS=$(DBGFLAG) -Os
+LDFLAGS=$(DBGFLAG) -O2
 
-SOURCES=router.c 
+SOURCES=router.c parse.c trie.c
 
 OBJECTS=$(SOURCES:.c=.o)
 
 TARGET=router
 
 
-.PHONY : clean run 
+.PHONY : clean 
 
 all: $(TARGET)
 
@@ -22,6 +22,9 @@ $(TARGET): $(OBJECTS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 .depend: depend 
+
+test: $(TARGET)
+	./$(TARGET) | circo -Tpng | display
 
 
 depend: $(SOURCES)
