@@ -18,7 +18,7 @@ void trie_free(trie_t * top){
 
 void trie_add(trie_t *top, uint32_t prefix, uint8_t class, uint8_t oc, uint32_t value){
     if(class == 0){
-        if(oc > top->class){
+        if(oc >= top->class){
             top->value = value;
             top->class = oc;
         }
@@ -29,7 +29,7 @@ void trie_add(trie_t *top, uint32_t prefix, uint8_t class, uint8_t oc, uint32_t 
             uint32_t duprefix = (prefix & mask)>>(32-STRIDE) //Get the top STRIDE bits
                 & (UINT32_MAX<<(STRIDE-class)); //Make sure dupe non padding bits are 0
             for(int i = 0; i < dupes; i++){
-                trie_add(top, duprefix | i, STRIDE, oc, value);
+                trie_add(top, (duprefix | i)<<(32-STRIDE), STRIDE, oc, value);
             }
         } else {
             int n = (prefix & mask) >> (32-STRIDE);
@@ -41,7 +41,13 @@ void trie_add(trie_t *top, uint32_t prefix, uint8_t class, uint8_t oc, uint32_t 
     }
 }
 uint32_t trie_lookup(trie_t *top, uint32_t address){
-    return 0;
+	register uint8_t n = address>>(32-STRIDE);
+	if(top->children[n] != NULL){
+		register uint32_t ch = trie_lookup(top->children[n], address<<STRIDE);
+		return ch>0?ch:top->value;
+	} else {
+		return top->value;	
+	}
 }
 
 void trie_print_graph(trie_t *top){
@@ -57,14 +63,21 @@ long trie_print(trie_t *top){
 	if(top->value){
 		uint32_t tmp = htonl(top->value);
 		inet_ntop(AF_INET, &tmp, vstring, INET_ADDRSTRLEN);
+		printf("%ld [label=\"%s {%d}\"];\n", thisid, vstring, top->class);
+	} else {
+		printf("%ld [label=\"\"];\n", thisid);
 	}
-	printf("%ld [label=\"%s\"];\n", thisid, vstring);
 
 	for(int i = 0; i < 1<<STRIDE; i++){
 		if(top->children[i] != NULL){
 			int c = trie_print(top->children[i]);
-			if(c >= 0)
-				printf("%ld--%d [label=\"%d%d\"];\n",thisid, c, i&2, i&1);
+			if(c >= 0){
+				printf("%ld--%d [label=\"",thisid, c);
+				for(int bit = STRIDE-1; bit >= 0; bit--){
+					printf("%d", (i>>bit) & 1);
+				}
+				puts("\"];");
+			}
 		}
 	}
 	return thisid;

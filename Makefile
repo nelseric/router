@@ -1,8 +1,9 @@
 CC=gcc
 DBGFLAG=-ggdb 
-CFLAGS=-std=c99 $(DBGFLAG) -Wall -O2 
+OPTFLAG=-O0
+CFLAGS=-std=c99 $(DBGFLAG) -Wall $(OPTFLAG)
 LDLIBS=
-LDFLAGS=$(DBGFLAG) -O2
+LDFLAGS=$(DBGFLAG) $(OPTFLAG)
 
 SOURCES=router.c parse.c trie.c
 

@@ -6,8 +6,8 @@
 #include <arpa/inet.h>
 #include "trie.h"
 
-void parse(char *filename, trie_t *top){
-    FILE *f = fopen("bgpsample.txt", "r");
+void parse(char *filename, trie_t *top, int maxclass){
+    FILE *f = fopen(filename, "r");
 
     char buf[128];
 
@@ -39,7 +39,9 @@ void parse(char *filename, trie_t *top){
 
         // printf("%s/%s %s\t", tmp_prefix, tmp_class, tmp_dest);
         // printf("%u/%u %u\n", prefix, class, dest);
-        trie_add(top, prefix, class, class, dest);
+        if(class <= maxclass){
+            trie_add(top, prefix, class, class, dest);
+        }
 
     }
 
