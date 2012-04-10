@@ -1,9 +1,9 @@
 CC=gcc
 PROGOPTS=-DCMEM
 DBGFLAG=-ggdb 
-OPTFLAG=-O0
+OPTFLAG=-O2
 CFLAGS=-std=c99 $(DBGFLAG) -Wall $(OPTFLAG) $(PROGOPTS)
-LDLIBS=
+LDLIBS=-lrt
 LDFLAGS=$(DBGFLAG) $(OPTFLAG)
 
 SOURCES=router.c parse.c trie.c test.c
@@ -18,7 +18,7 @@ TARGET=router
 all: $(TARGET)
 
 $(TARGET): $(OBJECTS)
-	$(CC) -o $(TARGET) $(LDFLAGS) $(LDLIBS) $(OBJECTS)
+	$(CC) -o $(TARGET) $(LDFLAGS) $(OBJECTS) $(LDLIBS)
 
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)

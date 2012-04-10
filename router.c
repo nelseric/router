@@ -1,47 +1,51 @@
+#define _POSIX_C_SOURCE 199309L
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <arpa/inet.h>
+#include <time.h>
 #include "parse.h"
 #include "trie.h"
 #include "test.h"
 
+struct timespec diff(struct timespec start, struct timespec end)
+{
+    struct timespec temp;
+    if ((end.tv_nsec-start.tv_nsec)<0) {
+        temp.tv_sec = end.tv_sec-start.tv_sec-1;
+        temp.tv_nsec = 1000000000+end.tv_nsec-start.tv_nsec;
+    } else {
+        temp.tv_sec = end.tv_sec-start.tv_sec;
+        temp.tv_nsec = end.tv_nsec-start.tv_nsec;
+    }
+    return temp;
+}
 
 
 int main(int argc, char *argv[]){
 
     trie_t *top = trie_new();
 
-    // char *lookstr;
-    uint8_t max = 32;
+    int max = 1000;
 
-    // if(argc >= 2){
-    // 	lookstr = argv[1];
-    // 	if(argc >= 3){
-    // 		max = atoi(argv[2]);
-    // 	}
-    // }else {
-    // 	lookstr = "123.4.5.6";
-    // }
-
-    parse("bgpsample.txt", top, max);
-    // test(top, "samples.txt");
-
-
-    for(int i = 0; i < 100000; i++){
-        trie_lookup(top, rand());
+    if(argc >= 2){
+        max = atoi(argv[1]);
     }
 
-    // uint32_t lookaddr;
-    // inet_pton(AF_INET, lookstr, &lookaddr);
+    parse("bgpsample.txt", top, max);
+    
+    srand(time(0));
+    for(int i = 0; i < max; i++){
+        struct timespec start, stop;
 
-    //    uint32_t look = htonl(trie_lookup(top, lookaddr));
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+        trie_lookup(top, rand());
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
+        printf("%ld\n", diff(start, stop).tv_nsec);
+    }
 
-    //    char buf[INET_ADDRSTRLEN];
-    //    inet_ntop(AF_INET, &look, buf, INET_ADDRSTRLEN);
-
-    //    printf("%s\t%s\n", lookstr, buf);
+    // test(top, "samples.txt");
     // trie_print_graph(top);
 
     trie_free(top);
