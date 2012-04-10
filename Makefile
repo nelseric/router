@@ -1,11 +1,12 @@
 CC=gcc
+PROGOPTS=-DCMEM
 DBGFLAG=-ggdb 
 OPTFLAG=-O0
-CFLAGS=-std=c99 $(DBGFLAG) -Wall $(OPTFLAG)
+CFLAGS=-std=c99 $(DBGFLAG) -Wall $(OPTFLAG) $(PROGOPTS)
 LDLIBS=
 LDFLAGS=$(DBGFLAG) $(OPTFLAG)
 
-SOURCES=router.c parse.c trie.c
+SOURCES=router.c parse.c trie.c test.c
 
 OBJECTS=$(SOURCES:.c=.o)
 

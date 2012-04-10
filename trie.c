@@ -3,18 +3,46 @@
 #include <stdio.h>
 #include <arpa/inet.h>
 
+#ifdef CMEM
+static size_t curpage = -1;
+static size_t nmemb = TRIE_PAGE_SIZE;
+static trie_t *pages[4];
+
 trie_t * trie_new(){
-    return (trie_t *) calloc(1, sizeof(trie_t));
+    if(nmemb == TRIE_PAGE_SIZE){
+        nmemb = 0;
+        curpage++;
+        pages[curpage] = calloc(TRIE_PAGE_SIZE, sizeof(trie_t));
+    }
+
+
+    return pages[curpage] + nmemb++;
 }
 
 void trie_free(trie_t * top){
-	for(int i = 0; i < 1<<STRIDE; i++){
-		if(top->children[i] != NULL){
-			trie_free(top->children[i]);
-		}
-	}
-	free(top);
+    for(int i = 0; i <= curpage; i++){
+        free(pages[i] );
+    }
 }
+
+#else
+
+trie_t * trie_new(){
+    return (trie_t *) calloc(1, sizeof(trie_t));   
+}
+
+void trie_free(trie_t * top){
+    for(int i = 0; i < 1<<STRIDE; i++){
+        if(top->children[i] != NULL){
+            trie_free(top->children[i]);
+        }
+    }
+    free(top);
+}
+
+#endif
+
+
 
 void trie_add(trie_t *top, uint32_t prefix, uint8_t class, uint8_t oc, uint32_t value){
     if(class == 0){
@@ -41,44 +69,57 @@ void trie_add(trie_t *top, uint32_t prefix, uint8_t class, uint8_t oc, uint32_t 
     }
 }
 uint32_t trie_lookup(trie_t *top, uint32_t address){
-	register uint8_t n = address>>(32-STRIDE);
-	if(top->children[n] != NULL){
-		register uint32_t ch = trie_lookup(top->children[n], address<<STRIDE);
-		return ch>0?ch:top->value;
-	} else {
-		return top->value;	
-	}
+    uint8_t n = address>>(32-STRIDE);
+ #ifdef TDEBUG
+    int a = 0;
+    for(int bit = 31; bit >= 0; bit--){
+        printf("%d", (address>>bit) & 1);
+        if(++a%8 == 0)
+            printf(" ");
+    }
+    printf("\t");
+    for(int bit = STRIDE-1; bit >= 0; bit--){
+        printf("%d", (n>>bit) & 1);
+    }
+    puts("");
+#endif
+    if(top->children[n] != NULL){
+        register uint32_t ch = trie_lookup(top->children[n], address<<STRIDE);
+        return ch>0?ch:top->value;
+    } else {
+        return top->value;	
+    }
 }
 
 void trie_print_graph(trie_t *top){
-	puts("graph trie {");
-	trie_print(top);
-	puts("}");
+    puts("graph trie {");
+    trie_print(top);
+    puts("}");
 }
 
 long trie_print(trie_t *top){
-	static long id = 0;
-	long thisid = id++;
-	char vstring[INET_ADDRSTRLEN] = "";
-	if(top->value){
-		uint32_t tmp = htonl(top->value);
-		inet_ntop(AF_INET, &tmp, vstring, INET_ADDRSTRLEN);
-		printf("%ld [label=\"%s {%d}\"];\n", thisid, vstring, top->class);
-	} else {
-		printf("%ld [label=\"\"];\n", thisid);
-	}
+    static long id = 0;
+    long thisid = id++;
+    char vstring[INET_ADDRSTRLEN] = "";
+    if(top->value){
+        uint32_t tmp = htonl(top->value);
+        inet_ntop(AF_INET, &tmp, vstring, INET_ADDRSTRLEN);
+        printf("%ld [label=\"%s {%d}\"];\n", thisid, vstring, top->class);
+    } else {
+        printf("%ld [label=\"\"];\n", thisid);
+    }
 
-	for(int i = 0; i < 1<<STRIDE; i++){
-		if(top->children[i] != NULL){
-			int c = trie_print(top->children[i]);
-			if(c >= 0){
-				printf("%ld--%d [label=\"",thisid, c);
-				for(int bit = STRIDE-1; bit >= 0; bit--){
-					printf("%d", (i>>bit) & 1);
-				}
-				puts("\"];");
-			}
-		}
-	}
-	return thisid;
+    for(int i = 0; i < 1<<STRIDE; i++){
+        if(top->children[i] != NULL){
+            int c = trie_print(top->children[i]);
+            if(c >= 0){
+                printf("%ld--%d [label=\"",thisid, c);
+                for(int bit = STRIDE-1; bit >= 0; bit--){
+                    printf("%d", (i>>bit) & 1);
+                }
+                puts("\"];");
+            }
+        }
+    }
+    return thisid;
 }

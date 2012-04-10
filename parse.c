@@ -20,6 +20,9 @@ void parse(char *filename, trie_t *top, int maxclass){
                 break;
             }
         }
+        if(strlen(buf) < 7){
+            break;
+        }
 
         char *tmp_prefix = strtok(buf, " ");
         char *tmp_dest = strtok(NULL, " ");
@@ -28,7 +31,7 @@ void parse(char *filename, trie_t *top, int maxclass){
 
         tmp_prefix = strtok(tmp_prefix, "/");
         char *tmp_class = strtok(NULL, "/");
-        
+
 
         uint32_t dest, prefix;
         inet_pton(AF_INET, tmp_prefix, &prefix);
@@ -36,7 +39,16 @@ void parse(char *filename, trie_t *top, int maxclass){
         uint8_t class = atoi(tmp_class);
         prefix = ntohl(prefix);
         dest = ntohl(dest);
+        // int a = 0;
+        // for(int bit = 31; bit >= 0; bit--){
+        //     printf("%d", (prefix>>bit) & 1);
+        //     if(++a%8 == 0)
+        //         printf(" ");
+        // }
 
+        // printf("\t%s/%d", tmp_prefix, class);
+
+        // puts("");
         // printf("%s/%s %s\t", tmp_prefix, tmp_class, tmp_dest);
         // printf("%u/%u %u\n", prefix, class, dest);
         if(class <= maxclass){
