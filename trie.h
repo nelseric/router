@@ -2,7 +2,7 @@
 #define _ROUTER_H_
 #include <stdint.h>
 
-#define STRIDE 4
+#define STRIDE 2
 #define TRIE_PAGE_SIZE 1000000
 #define TRIE_MAX_PAGES 4
 
