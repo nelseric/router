@@ -34,18 +34,57 @@ int main(int argc, char *argv[]){
     }
 
     parse("bgpsample.txt", top, max);
-    
+#ifndef _UNIT_TEST    
     srand(time(0));
+    long it = 0, r = 0, h=0, m=0;
     for(int i = 0; i < max; i++){
-        struct timespec start, stop;
+        struct timespec start, stop, iter, rec;
+        uint32_t lkup = rand();
+        uint32_t rx, ix;
+        uint32_t x = trie_lookup(top, lkup);
+/*/
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+        ix = trie_lookupr(top, lkup);
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
+        rec = diff(start, stop);
 
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
-        trie_lookup(top, rand());
+        rx = trie_lookupi(top, lkup);
         clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
-        printf("%ld\n", diff(start, stop).tv_nsec);
-    }
+        iter = diff(start, stop);
+/*///
 
-    // test(top, "samples.txt");
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+        rx = trie_lookupi(top, lkup);
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
+        iter = diff(start, stop);
+
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &start);
+        ix = trie_lookupr(top, lkup);
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &stop);
+        rec = diff(start, stop);
+//*/
+        if(x==(96<<24|4<<16|55))
+
+            // printf("m");
+            m++;
+        else{
+            // printf("h");
+            h++;
+        }
+        if(iter.tv_nsec > rec.tv_nsec){
+            r++;
+        } else {
+            it++;
+        }
+        //printf("%s %ld %ld %s\n",iter.tv_nsec > rec.tv_nsec?"R":"I", iter.tv_nsec, rec.tv_nsec , (x == rx && x== ix)?"":"FAIL");
+    }
+    printf("%f%% hit rate, %.1f%% iterative wins, %.1f%% recursive wins.\n", (100.0*h)/(h+m), (100.0*it)/(r+it), (100.0*r)/(r+it));
+#else
+
+    test(top, "samples.txt");
+
+#endif
     // trie_print_graph(top);
 
     trie_free(top);

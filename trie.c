@@ -68,26 +68,53 @@ void trie_add(trie_t *top, uint32_t prefix, uint8_t class, uint8_t oc, uint32_t 
         }
     }
 }
+#ifdef _ITLKUP
+uint32_t trie_lookup(trie_t *top, uint32_t address){
+    int n = address>>(32-STRIDE);
+    uint32_t val = top->value;
+    while(top->children[n] != NULL){
+        top = top->children[n];
+        val = top->value?top->value:val;
+        address = address<<2;
+        n = address>>(32-STRIDE);
+    }
+    return val;
+}
+
+
+
+
+#else
 uint32_t trie_lookup(trie_t *top, uint32_t address){
     uint8_t n = address>>(32-STRIDE);
- #ifdef TDEBUG
-    int a = 0;
-    for(int bit = 31; bit >= 0; bit--){
-        printf("%d", (address>>bit) & 1);
-        if(++a%8 == 0)
-            printf(" ");
-    }
-    printf("\t");
-    for(int bit = STRIDE-1; bit >= 0; bit--){
-        printf("%d", (n>>bit) & 1);
-    }
-    puts("");
-#endif
     if(top->children[n] != NULL){
-        register uint32_t ch = trie_lookup(top->children[n], address<<STRIDE);
+        uint32_t ch = trie_lookup(top->children[n], address<<STRIDE);
         return ch>0?ch:top->value;
     } else {
         return top->value;	
+    }
+}
+#endif
+
+uint32_t trie_lookupi(trie_t *top, uint32_t address){
+    int n = address>>(32-STRIDE);
+    uint32_t val = top->value;
+    while(top->children[n] != NULL){
+        top = top->children[n];
+        val = top->value?top->value:val;
+        address = address<<2;
+        n = address>>(32-STRIDE);
+    }
+    return val;
+}
+
+uint32_t trie_lookupr(trie_t *top, uint32_t address){
+    uint8_t n = address>>(32-STRIDE);
+    if(top->children[n] != NULL){
+        uint32_t ch = trie_lookupr(top->children[n], address<<STRIDE);
+        return ch>0?ch:top->value;
+    } else {
+        return top->value;  
     }
 }
 
